@@ -12128,19 +12128,34 @@ function parseLogLine(line) {
     msg: String(parsed.msg ?? "")
   };
 }
+function updateCounters() {
+  const elWarn = document.getElementById("logWarnings");
+  const elErr = document.getElementById("logErrors");
+  const modenUIBtn = document.getElementById("btn_console");
+  if (elWarn) elWarn.innerText = String(logWarnings);
+  if (elErr) elErr.innerText = String(logErrors);
+  if (modenUIBtn) {
+    modenUIBtn.setAttribute("error-count", logErrors > 0 ? String(logErrors) : "");
+    modenUIBtn.style.backgroundColor = logErrors > 0 ? "var(--color-error)" : "";
+    modenUIBtn.title = `Log
+Errors ${logErrors}
+Warnings ${logWarnings}`;
+  }
+}
 async function clearErrors() {
   logWarnings = 0;
   logErrors = 0;
+  updateCounters();
   log("clearErrors");
 }
 async function initClearErrorsButton() {
   const btnServerClear = document.getElementById("btn_console_log_server_clear");
   if (btnServerClear) {
-    btnServerClear.onclick = async (evt) => {
+    btnServerClear.addEventListener("click", (evt) => {
       evt.preventDefault();
       evt.stopPropagation();
       clearErrors();
-    };
+    });
   }
 }
 async function logMonitor() {
@@ -12169,18 +12184,7 @@ async function logMonitor() {
     }
     if (atBottom2) logMonitorEl.scrollTop = logMonitorEl.scrollHeight;
     else if (logMonitorEl.parentElement) logMonitorEl.parentElement.style.cssText = "border-bottom: 2px solid var(--highlight-color);";
-    const elWarn = document.getElementById("logWarnings");
-    const elErr = document.getElementById("logErrors");
-    const modenUIBtn = document.getElementById("btn_console");
-    if (elWarn) elWarn.innerText = String(logWarnings);
-    if (elErr) elErr.innerText = String(logErrors);
-    if (modenUIBtn) {
-      modenUIBtn.setAttribute("error-count", logErrors > 0 ? String(logErrors) : "");
-      modenUIBtn.style.backgroundColor = logErrors > 0 ? "var(--color-error)" : "";
-      modenUIBtn.title = `Log
-Errors ${logErrors}
-Warnings ${logWarnings}`;
-    }
+    updateCounters();
   };
   const txtGallery = document.getElementById("txt2img_gallery");
   if (txtGallery) txtGallery.style.height = window.opts.logmonitor_show ? "50vh" : "55vh";
