@@ -57,6 +57,7 @@ def task_specific_kwargs(p, model):
     model_cls = model.__class__.__name__
     vae_scale_factor = sd_vae.get_vae_scale_factor(model)
     task_args = {}
+    requested_size = (getattr(p, 'width', None), getattr(p, 'height', None)) # resize_init_images overwrites the request with the image size
     is_img2img_model = bool('Zero123' in model_cls)
     task_type = sd_models.get_diffusers_task(model)
     if len(getattr(p, 'init_images', [])) > 0:
@@ -184,6 +185,12 @@ def task_specific_kwargs(p, model):
             'target_subject_category': (getattr(p, 'prompt', '').split() or [''])[-1],
             'output_type': 'pil',
         }
+
+    if (len(getattr(p, 'init_images', [])) > 0) and (None not in requested_size) and ('Size source' not in p.extra_generation_params):
+        output_size = (task_args.get('width', width), task_args.get('height', height)) # a call without a size runs at the image size
+        if any(abs(o - r) >= vae_scale_factor for o, r in zip(output_size, requested_size)): # beyond alignment, so nothing fitted the image to the request
+            log.warning(f'Size: source=image requested={requested_size[0]}x{requested_size[1]} image={output_size[0]}x{output_size[1]}')
+            p.extra_generation_params['Size source'] = 'image'
 
     if debug_enabled:
         debug_log(f'Process task specific args: {task_args}')

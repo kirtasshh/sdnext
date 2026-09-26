@@ -28,6 +28,7 @@
     refactored to use `ONNX` instead of obsolete `mmpose` lib and with additional configurable settings  
 - **Fixes**
   - api: hardening all all file-access api endpoints
+  - img2img: warn and record in the infotext when the output size follows the input image instead of the request
   - prompt cache: bypass when condition images are encoded
   - grid: images with transparency keep it in grids and live previews
   - group offload: places the vae on-demand behind the vae hijack
